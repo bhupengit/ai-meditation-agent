@@ -1,3 +1,4 @@
+import { Gradient } from "@/components/gradient"
 import { Text, View, StyleSheet } from "react-native"
 
 interface FormProps {
@@ -9,6 +10,8 @@ interface FormProps {
 
 export function Form({ title, subtitle, children, headerChildren }: FormProps) {
   return (
+    <>
+    <Gradient isSpeaking={false} position='top'/>
     <View style={styles.container}>
       <View style={styles.contentWrapper}>
         <View style={styles.headerContainer}>
@@ -21,6 +24,7 @@ export function Form({ title, subtitle, children, headerChildren }: FormProps) {
         </View>
       </View>
     </View>
+    </>
   )
 }
 
@@ -29,7 +33,6 @@ export default Form
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#ffffff",
     justifyContent: "center",
   },
   contentWrapper: {
@@ -41,7 +44,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ffffff",
   },
   headerTitle: {
     fontSize: 32,
@@ -60,7 +62,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   formContainer: {
-    backgroundColor: "#ffffff",
+    // backgroundColor: "#ffffff",
     paddingHorizontal: 24,
     paddingTop: 20,
     paddingBottom: 20,
