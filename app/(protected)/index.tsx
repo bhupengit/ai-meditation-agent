@@ -1,5 +1,6 @@
 import { View, Text } from 'react-native'
 import React from 'react'
+import {SignOutButton} from '@/components/clerk/SignOutButton'
 
 export default function index() {
   return (
@@ -11,6 +12,7 @@ export default function index() {
       }}
     >
       <Text>Home Screen</Text>
+      <SignOutButton />
     </View>
   )
 }
