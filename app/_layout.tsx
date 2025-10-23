@@ -1,6 +1,7 @@
 import { ClerkProvider, useAuth } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
 import { Stack } from "expo-router";
+import { ElevenLabsProvider } from "@elevenlabs/react-native";
 
 function RootLayoutWithAuth() {
   const { isSignedIn, isLoaded } = useAuth()
@@ -9,12 +10,15 @@ function RootLayoutWithAuth() {
     return null;
   }
   return (
+    <ElevenLabsProvider>
     <Stack>
+      
       <Stack.Protected
         guard={isSignedIn}
       >
         <Stack.Screen name="(protected)" options={{headerShown: false}}/>
       </Stack.Protected>
+      
       <Stack.Protected
         guard={!isSignedIn}
       >
@@ -22,6 +26,7 @@ function RootLayoutWithAuth() {
       </Stack.Protected>
 
     </Stack>
+    </ElevenLabsProvider>
   )
 }
 
