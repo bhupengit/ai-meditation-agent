@@ -1,10 +1,18 @@
-import { View, Text, Button } from 'react-native'
+import { View, Text, Button, ScrollView } from 'react-native'
 import React from 'react'
 import { useConversation } from '@elevenlabs/react-native'
 import { useUser } from '@clerk/clerk-expo';
+import { Redirect, useLocalSearchParams } from 'expo-router';
+import { sessions } from '@/utils/sessions';
 
 export default function SessionScreen() {
     const {user} = useUser()
+    const {sessionId} = useLocalSearchParams();
+    const session = sessions.find((s) =>  s.id === Number(sessionId)) ?? sessions[0]
+
+    // if(!sessionId){
+    //     return <Redirect href={"/"} />
+    // }
     const conversation = useConversation({
         onConnect: () => console.log('Connected to conversation'),
         onDisconnect: () => console.log('Disconnected from conversation'),
@@ -23,8 +31,8 @@ export default function SessionScreen() {
                 agentId: process.env.EXPO_PUBLIC_AGENT_ID,
                 dynamicVariables:{
                     user_name: user?.username ?? "Bhupen",
-                    session_title: "test",
-                    sessionDescription:"test",
+                    session_title: session.title,
+                    sessionDescription: session.description,
                 }
             })
         } catch (error) {
@@ -41,10 +49,10 @@ export default function SessionScreen() {
     }
 
     return (
-        <View>
+        <ScrollView contentInsetAdjustmentBehavior='automatic'>
             <Text>SessionScreen</Text>
             <Button title='Start Conversation' onPress={startConversation} />
             <Button title='End Conversation' onPress={endConversation} />
-        </View>
+        </ScrollView>
     )
 }
