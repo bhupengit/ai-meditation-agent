@@ -2,7 +2,7 @@ import { View, Text, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { useConversation } from '@elevenlabs/react-native'
 import { useUser } from '@clerk/clerk-expo';
-import { Redirect, useLocalSearchParams } from 'expo-router';
+import { Redirect, router, useLocalSearchParams, useRouter } from 'expo-router';
 import { sessions } from '@/utils/sessions';
 import { Gradient } from '../gradient';
 import Button from '../Button';
@@ -12,7 +12,7 @@ export default function SessionScreen() {
     const { user } = useUser()
     const { sessionId } = useLocalSearchParams();
     const session = sessions.find((s) => s.id === Number(sessionId)) ?? sessions[0]
-
+    const router = useRouter()
     const [isStarting, setIsStarting] = useState(false)
     const [conversationId, setConversationId] = useState<string | null>(null)
 
@@ -20,7 +20,7 @@ export default function SessionScreen() {
     //     return <Redirect href={"/"} />
     // }
     const conversation = useConversation({
-        onConnect: ({conversationId}) => setConversationId(conversationId),
+        onConnect: ({ conversationId }) => setConversationId(conversationId),
         onDisconnect: () => console.log('Disconnected from conversation'),
         onMessage: (message) => console.log('Received message:', message),
         onError: (error) => console.error('Conversation error:', error),
@@ -30,13 +30,13 @@ export default function SessionScreen() {
             console.log('Can send feedback changed:', prop.canSendFeedback),
         onUnhandledClientToolCall: (params) => console.log('Unhandled client tool call:', params),
 
-        clientTools:{
+        clientTools: {
             handleSetBrightness: async (parameters: unknown) => {
                 const { brightnessValue } = parameters as { brightnessValue: number }
-                console.log('Setting brightness to, ',{brightnessValue})
+                console.log('Setting brightness to, ', { brightnessValue })
 
                 const { status } = await Brightness.requestPermissionsAsync();
-                if(status === "granted"){
+                if (status === "granted") {
                     await Brightness.setSystemBrightnessAsync(brightnessValue)
                     return brightnessValue
                 }
@@ -45,7 +45,7 @@ export default function SessionScreen() {
     });
 
     const startConversation = async () => {
-        if(isStarting) return
+        if (isStarting) return
 
         try {
             setIsStarting(true)
@@ -59,7 +59,7 @@ export default function SessionScreen() {
             })
         } catch (error) {
             console.log(error)
-        }finally{
+        } finally {
             setIsStarting(false)
         }
     }
@@ -67,6 +67,10 @@ export default function SessionScreen() {
     const endConversation = async () => {
         try {
             await conversation.endSession()
+            router.push({
+                pathname: "/summary" as any,
+                params: { conversationId }
+            })
         } catch (error) {
             console.log(error)
         }
@@ -88,10 +92,10 @@ export default function SessionScreen() {
                 gap: 16,
             }}>
                 <Text>SessionScreen</Text>
-                <Text style={{ fontSize: 32, fontWeight: 'bold'}}>{session.title}</Text>
-                <Text style={{ fontSize: 16, fontWeight: 500, opacity: 0.5}}>{session.description}</Text>
-                <Button onPress={canStart ? startConversation : endConversation} 
-                disabled= {!canStart && !canEnd}>{canStart ? 'Start Conversation' : 'End Conversation'}</Button>
+                <Text style={{ fontSize: 32, fontWeight: 'bold' }}>{session.title}</Text>
+                <Text style={{ fontSize: 16, fontWeight: 500, opacity: 0.5 }}>{session.description}</Text>
+                <Button onPress={canStart ? startConversation : endConversation}
+                    disabled={!canStart && !canEnd}>{canStart ? 'Start Conversation' : 'End Conversation'}</Button>
             </View>
         </>
     )
