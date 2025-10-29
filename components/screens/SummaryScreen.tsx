@@ -4,11 +4,16 @@ import { Gradient } from '../gradient'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ConversationResponse } from '@/utils/types';
 import Button from '../Button';
+import { appwriteConfig, database } from '@/utils/appwrite';
+import { ID } from 'react-native-appwrite';
+import { useUser } from '@clerk/clerk-expo';
 
 export default function SummaryScreen() {
     const { conversationId } = useLocalSearchParams();
     const [conversation, setConversation] = useState<ConversationResponse>()
     const router = useRouter()
+    const {user} = useUser()
+    const [isSaving, setIsSaving] = useState(false)
     useEffect(() => {
         getSummary()
     }, [])
@@ -21,6 +26,33 @@ export default function SummaryScreen() {
         setConversation(data.conversation)
 
     }
+
+    async function saveAndContinue() {
+        try {
+            setIsSaving(true)
+            await database.createDocument(appwriteConfig.db,
+                appwriteConfig.tables.session,
+                ID.unique(),
+                {
+                    user_id: user?.id,
+                    status: conversation?.status,
+                    conv_id: conversationId,
+                    tokens: Number(conversation?.metadata?.cost),
+                    call_duration_secs: Number(
+                        conversation?.metadata?.call_duration_secs
+                    ),
+                    transcript: conversation?.transcript.map((t) => t.message).join("\n"),
+                    call_summary_title: conversation?.analysis?.call_summary_title,
+                }
+            )
+
+            router.dismissAll()
+        } catch (error) {
+            console.log(error)
+        }finally{
+            setIsSaving(false)
+        }
+    }
     return (
         <>
             <Gradient position='bottom' isSpeaking={false} />
@@ -29,7 +61,7 @@ export default function SummaryScreen() {
                 contentContainerStyle={{ paddingHorizontal: 16 }}
             >
                 {conversation?.status !== "done" && (
-                    <View style={{ gap: 16, paddingBottom: 16}}>
+                    <View style={{ gap: 16, paddingBottom: 16 }}>
                         <Text style={styles.title}>We are processing your call...</Text>
                         <Text style={styles.subtitle}>This may take a few minutes.</Text>
                         <Text style={styles.subtitle}>
@@ -38,8 +70,8 @@ export default function SummaryScreen() {
                         <Button onPress={getSummary}>Refresh</Button>
                     </View>
                 )}
-                {conversation?.status === "done" &&(
-                    <View style={{ gap: 16, paddingBottom: 16}}>
+                {conversation?.status === "done" && (
+                    <View style={{ gap: 16, paddingBottom: 16 }}>
                         <Text style={styles.caption}>{conversationId}</Text>
                         <Text style={styles.title}>
                             {conversation?.analysis?.call_summary_title}
@@ -67,9 +99,9 @@ export default function SummaryScreen() {
                         </Text>
                     </View>
                 )}
-                <View style={{ alignItems: "center"}} >
+                <View style={{ alignItems: "center" }} >
 
-                    <Button onPress={() => router.dismissAll()}>Save and continue</Button>
+                    <Button onPress={saveAndContinue}>{isSaving ? "Saving..." : "Save and continue" }</Button>
                 </View>
             </ScrollView>
         </>
@@ -77,14 +109,14 @@ export default function SummaryScreen() {
 }
 
 const styles = StyleSheet.create({
-    title:{
+    title: {
         fontSize: 24,
         fontWeight: "bold"
     },
-    subtitle:{
+    subtitle: {
         fontSize: 16
     },
-    caption:{
+    caption: {
         fontSize: 12,
         color: "gray",
     }
