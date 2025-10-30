@@ -123,7 +123,7 @@ export default function index() {
       >
         <Image
           source={user?.imageUrl}
-          style={{ width: 50, height: 50, borderRadius: 100 }}
+          style={{ width: 60, height: 60, borderRadius: 120 }}
         />
         <Text style={{ fontSize: 20, fontWeight: "bold" }}>
           {user?.firstName} {user?.lastName}
